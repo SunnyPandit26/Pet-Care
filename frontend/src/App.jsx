@@ -17,7 +17,7 @@ import DogProfile from './pages/DogProfile'
 import DogCareAI from './pages/DogCareAI'
 import NearbyVets from './sections/NearbyVets'
 import NGOSection from './components/NGOSection'
-// import VaccinationDashboard from './pages/VaccinationDashboard'
+import VaccinationDashboard from './pages/VaccinationDashboard'
 
 
 
@@ -67,7 +67,7 @@ function App() {
         <Route path="/detection" element={<DogCareAI />} />
         <Route path="/generate" element={<QRCodeGenerator />} />
         <Route path="/qr" element={<QRPage />} />
-        {/* <Route path="/vaccination-tracker" element={<VaccinationDashboard />} /> */}
+        <Route path="/vaccination-tracker" element={<VaccinationDashboard />} />
         
       </Routes>
     </Router>

@@ -84,6 +84,14 @@ export default function Navbar() {
             ))}
             <div className="flex items-center gap-3">
               <motion.button
+                onClick={() => navigate('/vaccination-tracker')}
+                className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors duration-300 bg-none border-none cursor-pointer px-3 py-2 rounded-lg hover:bg-blue-50"
+                whileHover={{ y: -2 }}
+              >
+                <Heart className="w-4 h-4" />
+                Health Tracker
+              </motion.button>
+              <motion.button
                 onClick={() => navigate('/solution')}
                 className="px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-green-200 hover:shadow-xl hover:shadow-green-200/50 hover:scale-105 transition-all duration-300 cursor-pointer border-none"
                 whileHover={{ scale: 1.03, y: -2 }}
@@ -126,6 +134,16 @@ export default function Navbar() {
                   {link.name}
                 </button>
               ))}
+              <button
+                onClick={() => {
+                  navigate('/vaccination-tracker')
+                  setIsMobileMenuOpen(false)
+                }}
+                className="mt-2 flex items-center justify-center gap-2 px-5 py-3 text-blue-600 text-sm font-bold rounded-xl hover:bg-blue-50 cursor-pointer border-none bg-none w-full transition-colors"
+              >
+                <Heart className="w-4 h-4" />
+                Health Tracker
+              </button>
               <button
                 onClick={() => {
                   navigate('/solution')
