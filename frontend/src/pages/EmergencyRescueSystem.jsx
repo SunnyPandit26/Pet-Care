@@ -5,7 +5,7 @@ import {
   CheckCircle, Clock, Navigation, X, 
   Shield, Heart, Stethoscope, ChevronRight, Siren,
   Dog, PawPrint, LocateFixed, AlertCircle, Camera,
-  Ban, Loader2
+  Ban, Loader2, FileText, Download, CreditCard, Wallet, BadgeCheck, Receipt, Banknote
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -83,6 +83,16 @@ export default function EmergencyRescueSystem() {
   const [acceptedVet, setAcceptedVet] = useState(null);
   const [currentStatus, setCurrentStatus] = useState('sent');
   const [statusMessage, setStatusMessage] = useState('');
+
+  // Post-rescue payment state
+  const [rescueCompleted, setRescueCompleted] = useState(false);
+  const [showPaymentDecision, setShowPaymentDecision] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState(null); // 'user' or 'fund'
+  const [paymentForm, setPaymentForm] = useState({ name: '', phone: '', id: '' });
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [receiptData, setReceiptData] = useState(null);
+  const [rescueCost] = useState(500);
+  const [totalFund, setTotalFund] = useState(12450);
 
   // Handle image upload
   const handleImageUpload = (e) => {
@@ -225,6 +235,133 @@ export default function EmergencyRescueSystem() {
     setAcceptedVet(null);
     setCurrentStatus('sent');
     setStatusMessage('');
+    setRescueCompleted(false);
+    setShowPaymentDecision(false);
+    setPaymentMethod(null);
+    setPaymentForm({ name: '', phone: '', id: '' });
+    setPaymentSuccess(false);
+    setReceiptData(null);
+  };
+
+  // Mark rescue as completed
+  const markRescueComplete = () => {
+    setRescueCompleted(true);
+    setShowPaymentDecision(true);
+  };
+
+  // Handle payment method selection
+  const handlePaymentMethod = (method) => {
+    setPaymentMethod(method);
+    if (method === 'fund') {
+      // Deduct from donation fund
+      setTotalFund(prev => prev - rescueCost);
+      generateReceipt('Donation Fund');
+      setPaymentSuccess(true);
+    }
+  };
+
+  // Handle user payment submission
+  const handleUserPayment = () => {
+    if (paymentForm.name && paymentForm.phone) {
+      generateReceipt('User Payment');
+      setPaymentSuccess(true);
+    }
+  };
+
+  // Generate receipt
+  const generateReceipt = (method) => {
+    const transactionId = 'TXN' + Date.now() + Math.random().toString(36).substr(2, 6).toUpperCase();
+    setReceiptData({
+      transactionId,
+      amount: rescueCost,
+      method,
+      vetName: acceptedVet?.name,
+      vetClinic: acceptedVet?.clinic,
+      date: new Date().toLocaleString('en-IN'),
+      payerName: paymentForm.name || 'Anonymous',
+      payerPhone: paymentForm.phone || '-'
+    });
+  };
+
+  // Download report
+  const downloadReport = () => {
+    const reportContent = `
+EMERGENCY RESCUE REPORT
+=======================
+
+Rescue ID: ${Date.now()}
+Date & Time: ${formatTimestamp(reportData?.timestamp)}
+
+DOG CONDITION
+-------------
+Condition: ${reportData?.condition?.label}
+Notes: ${reportData?.notes || 'None'}
+
+LOCATION
+--------
+Address: ${reportData?.location}
+GPS: ${reportData?.coordinates?.lat ? `${reportData.coordinates.lat.toFixed(4)}, ${reportData.coordinates.lng.toFixed(4)}` : 'Not available'}
+
+VET DETAILS
+-----------
+Name: ${acceptedVet?.name}
+Clinic: ${acceptedVet?.clinic}
+Phone: ${acceptedVet?.phone}
+
+REPORTER INFORMATION
+-------------------
+Name: ${reportData?.helperName}
+Phone: ${reportData?.helperPhone || 'Not provided'}
+
+STATUS: RESCUE COMPLETED
+    `;
+    
+    const blob = new Blob([reportContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Rescue_Report_${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Download receipt
+  const downloadReceipt = () => {
+    const receiptContent = `
+RESCUE PAYMENT RECEIPT
+======================
+
+Transaction ID: ${receiptData?.transactionId}
+Date: ${receiptData?.date}
+
+PAYMENT DETAILS
+---------------
+Amount Paid: ₹${receiptData?.amount}
+Payment Method: ${receiptData?.method}
+Payer Name: ${receiptData?.payerName}
+Payer Phone: ${receiptData?.payerPhone}
+
+VET DETAILS
+-----------
+Name: ${receiptData?.vetName}
+Clinic: ${receiptData?.vetClinic}
+
+STATUS: PAYMENT TRANSFERRED TO VERIFIED VET ACCOUNT
+
+Thank you for supporting this rescue! ❤️
+    `;
+    
+    const blob = new Blob([receiptContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Receipt_${receiptData?.transactionId}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const formatTimestamp = (isoString) => {
@@ -840,6 +977,254 @@ export default function EmergencyRescueSystem() {
                     />
                   </div>
                 </motion.div>
+
+                {/* Mark Rescue Complete Button - Only show if not completed */}
+                {!rescueCompleted && (
+                  <motion.button
+                    onClick={markRescueComplete}
+                    className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <BadgeCheck className="w-5 h-5" />
+                    Mark Rescue as Completed
+                  </motion.button>
+                )}
+
+                {/* Rescue Completed Banner */}
+                {rescueCompleted && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-gradient-to-r from-emerald-500 to-green-500 rounded-2xl shadow-lg p-5 text-white text-center"
+                  >
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <CheckCircle className="w-8 h-8" />
+                    </div>
+                    <h3 className="text-xl font-bold">✅ Rescue Completed!</h3>
+                    <p className="text-white/90 text-sm mt-1">The dog has been successfully rescued and treated.</p>
+                  </motion.div>
+                )}
+
+                {/* Emergency Report - Download Option */}
+                {rescueCompleted && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-2xl shadow-lg p-6 border border-blue-100"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">Emergency Report Generated</h3>
+                        <p className="text-sm text-gray-500">Rescue ID: {Date.now().toString().slice(-6)}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gray-50 rounded-xl p-4 mb-4 text-sm">
+                      <p className="text-gray-600 mb-2"><strong>Dog Condition:</strong> {reportData?.condition?.label}</p>
+                      <p className="text-gray-600 mb-2"><strong>Rescue Location:</strong> {reportData?.location}</p>
+                      <p className="text-gray-600 mb-2"><strong>Vet:</strong> {acceptedVet?.name} ({acceptedVet?.clinic})</p>
+                      <p className="text-gray-600"><strong>Treatment:</strong> Emergency first aid administered, vitals stabilized, scheduled for follow-up care.</p>
+                    </div>
+
+                    <motion.button
+                      onClick={downloadReport}
+                      className="w-full py-3 bg-blue-100 text-blue-700 font-semibold rounded-xl hover:bg-blue-200 transition-all flex items-center justify-center gap-2"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Download className="w-5 h-5" />
+                      Download Report
+                    </motion.button>
+                  </motion.div>
+                )}
+
+                {/* Payment Decision UI */}
+                {showPaymentDecision && !paymentSuccess && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-2xl shadow-lg p-6 border border-amber-100"
+                  >
+                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <Banknote className="w-5 h-5 text-amber-600" />
+                      Payment for Rescue Services
+                    </h3>
+                    <p className="text-gray-600 mb-5 text-sm">
+                      Amount to pay: <span className="font-bold text-amber-600 text-lg">₹{rescueCost}</span>
+                    </p>
+
+                    {paymentMethod === null && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <motion.button
+                          onClick={() => handlePaymentMethod('user')}
+                          className="py-4 px-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all flex flex-col items-center gap-2"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <CreditCard className="w-6 h-6" />
+                          <span className="text-sm">I will pay for this rescue</span>
+                        </motion.button>
+
+                        <motion.button
+                          onClick={() => handlePaymentMethod('fund')}
+                          className="py-4 px-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all flex flex-col items-center gap-2"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <Wallet className="w-6 h-6" />
+                          <span className="text-sm">Use Donation Fund</span>
+                        </motion.button>
+                      </div>
+                    )}
+
+                    {/* User Payment Form */}
+                    {paymentMethod === 'user' && !paymentSuccess && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="space-y-4"
+                      >
+                        <p className="text-sm text-gray-600 mb-4">Please enter your details to complete the payment of ₹{rescueCost}</p>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Your Name *</label>
+                          <input
+                            type="text"
+                            value={paymentForm.name}
+                            onChange={(e) => setPaymentForm({ ...paymentForm, name: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none"
+                            placeholder="Enter your full name"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                          <input
+                            type="tel"
+                            value={paymentForm.phone}
+                            onChange={(e) => setPaymentForm({ ...paymentForm, phone: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none"
+                            placeholder="+91 98765 43210"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">ID Number (Optional)</label>
+                          <input
+                            type="text"
+                            value={paymentForm.id}
+                            onChange={(e) => setPaymentForm({ ...paymentForm, id: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none"
+                            placeholder="Aadhar / PAN / Any ID"
+                          />
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                          <motion.button
+                            onClick={() => setPaymentMethod(null)}
+                            className="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-all"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            Back
+                          </motion.button>
+                          <motion.button
+                            onClick={handleUserPayment}
+                            disabled={!paymentForm.name || !paymentForm.phone}
+                            className="flex-1 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            Pay ₹{rescueCost}
+                          </motion.button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </motion.div>
+                )}
+
+                {/* Payment Success Messages */}
+                {paymentSuccess && receiptData && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="space-y-4"
+                  >
+                    {/* Success Banner */}
+                    <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl shadow-lg p-5 text-white text-center">
+                      <CheckCircle className="w-10 h-10 mx-auto mb-2" />
+                      {receiptData.method === 'User Payment' ? (
+                        <>
+                          <h3 className="text-lg font-bold">Payment Successful!</h3>
+                          <p className="text-white/90 text-sm">Thank you for supporting this rescue ❤️</p>
+                        </>
+                      ) : (
+                        <>
+                          <h3 className="text-lg font-bold">₹{rescueCost} Paid from Donation Fund</h3>
+                          <p className="text-white/90 text-sm">Payment transferred to verified vet account</p>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Receipt Card */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-white rounded-2xl shadow-lg p-6 border border-green-100"
+                    >
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                          <Receipt className="w-6 h-6 text-green-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">Payment Receipt</h3>
+                          <p className="text-sm text-gray-500">TXN: {receiptData.transactionId}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 text-sm mb-5 bg-gray-50 rounded-xl p-4">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Amount Paid:</span>
+                          <span className="font-bold text-gray-900">₹{receiptData.amount}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Payment Method:</span>
+                          <span className="font-medium text-gray-900">{receiptData.method}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Vet:</span>
+                          <span className="font-medium text-gray-900">{receiptData.vetName}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Date:</span>
+                          <span className="font-medium text-gray-900">{receiptData.date}</span>
+                        </div>
+                        {receiptData.payerName && receiptData.payerName !== 'Anonymous' && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Payer:</span>
+                            <span className="font-medium text-gray-900">{receiptData.payerName}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <motion.button
+                        onClick={downloadReceipt}
+                        className="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <Download className="w-5 h-5" />
+                        Download Receipt
+                      </motion.button>
+                    </motion.div>
+                  </motion.div>
+                )}
 
                 {/* Reset Button */}
                 <motion.button
