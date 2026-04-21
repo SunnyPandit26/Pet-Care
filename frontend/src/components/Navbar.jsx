@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Dog, Menu, X, Heart } from 'lucide-react'
+import { Dog, Menu, X, Heart, Siren } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const navLinks = [
@@ -82,16 +82,26 @@ export default function Navbar() {
                 {link.name}
               </motion.button>
             ))}
-            <div className="flex items-center gap-3">
-              <motion.button
-                onClick={() => navigate('/solution')}
-                className="px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-green-200 hover:shadow-xl hover:shadow-green-200/50 hover:scale-105 transition-all duration-300 cursor-pointer border-none"
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Try Detection
-              </motion.button>
-            </div>
+            <motion.button
+              onClick={() => navigate('/emergency')}
+              className="px-5 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-red-200 hover:shadow-xl hover:shadow-red-200/50 hover:scale-105 transition-all duration-300 cursor-pointer border-none"
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <span className="flex items-center gap-2">
+                <Siren className="w-4 h-4" />
+                Emergency Rescue
+              </span>
+            </motion.button>
+            
+            <motion.button
+              onClick={() => navigate('/solution')}
+              className="px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-green-200 hover:shadow-xl hover:shadow-green-200/50 hover:scale-105 transition-all duration-300 cursor-pointer border-none"
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Try Detection
+            </motion.button>
           </div>
 
           <button
@@ -128,10 +138,21 @@ export default function Navbar() {
               ))}
               <button
                 onClick={() => {
+                  navigate('/emergency')
+                  setIsMobileMenuOpen(false)
+                }}
+                className="mt-2 text-center px-5 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-bold rounded-xl shadow-lg cursor-pointer border-none flex items-center justify-center gap-2"
+              >
+                <Siren className="w-4 h-4" />
+                Emergency Rescue
+              </button>
+              
+              <button
+                onClick={() => {
                   navigate('/solution')
                   setIsMobileMenuOpen(false)
                 }}
-                className="mt-2 text-center px-5 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-bold rounded-xl shadow-lg cursor-pointer border-none"
+                className="text-center px-5 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-bold rounded-xl shadow-lg cursor-pointer border-none"
               >
                 Try Detection
               </button>
