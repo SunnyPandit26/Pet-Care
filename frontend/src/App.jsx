@@ -15,6 +15,9 @@ import QRCodeGenerator from "./components/QRCodeGenerator"
 import QRPage from "./components/QRPage"
 import DogProfile from './pages/DogProfile'
 import DogCareAI from './pages/DogCareAI'
+// import EmergencyRescue from './pages/EmergencyRescue'
+// import EmergencyDogRescue from './pages/EmergencyDogRescue'
+import EmergencyRescueSystem from './pages/EmergencyRescueSystem'
 import NearbyVets from './sections/NearbyVets'
 import NGOSection from './components/NGOSection'
 import VaccinationDashboard from './pages/VaccinationDashboard'
@@ -65,6 +68,9 @@ function App() {
         <Route path="/solution" element={<SolutionPage />} />
         <Route path="/pet/:dogId" element={<DogProfile />} /> 
         <Route path="/detection" element={<DogCareAI />} />
+        {/* <Route path="/emergency-rescue" element={<EmergencyRescue />} />
+        <Route path="/emergency-dog-rescue" element={<EmergencyDogRescue />} /> */}
+        <Route path="/emergency" element={<EmergencyRescueSystem />} />
         <Route path="/generate" element={<QRCodeGenerator />} />
         <Route path="/qr" element={<QRPage />} />
         <Route path="/vaccination-tracker" element={<VaccinationDashboard />} />
