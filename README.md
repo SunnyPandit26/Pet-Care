@@ -1,4 +1,8 @@
-# AI Rebels - Dog Disease Detection System
+# AI Rebels - PET CARE
+
+# Sunny Pandit
+# Ritika 
+# Priya Sidhu
 
 A modern, responsive frontend UI for the AI Rebels hackathon project - an AI-based dog disease detection system.
 
